@@ -60,9 +60,7 @@ void setup() {
 
   Serial.println("Ready!");
   Serial.println("Send the character '0' or '1' to calibrate respective motor (you must do this before you can command movement)");
-  Serial.println("Send the character 's' to exectue test move");
-  Serial.println("Send the character 'b' to read bus voltage");
-  Serial.println("Send the character 'p' to read motor positions in a 10s loop");
+  Serial.println("Send the character 's' to test position move");
 }
 
 void loop() {
@@ -88,35 +86,14 @@ void loop() {
       if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
     }
 
-    // Sinusoidal test move
+    // test position move
     if (c == 's') {
-      Serial.println("Executing test move");
-      for (float ph = 0.0f; ph < 6.28318530718f; ph += 0.01f) {
-        float pos_m0 = 2.0f * cos(ph);
-        float pos_m1 = 2.0f * sin(ph);
-        odrive.SetPosition(0, pos_m0);
-        odrive.SetPosition(1, pos_m1);
-        delay(5);
-      }
+      Serial.println("Executing test position move");
+    　float pos_m0 = 1.0f;
+　　　float pos_m1 = 1.0f;
+      odrive.SetPosition(0, pos_m0);
+      odrive.SetPosition(1, pos_m1);
     }
 
-    // Read bus voltage
-    if (c == 'b') {
-      odrive_serial << "r vbus_voltage\n";
-      Serial << "Vbus voltage: " << odrive.readFloat() << '\n';
-    }
-
-    // print motor positions in a 10s loop
-    if (c == 'p') {
-      static const unsigned long duration = 10000;
-      unsigned long start = millis();
-      while(millis() - start < duration) {
-        for (int motor = 0; motor < 2; ++motor) {
-          odrive_serial << "r axis" << motor << ".encoder.pos_estimate\n";
-          Serial << odrive.readFloat() << '\t';
-        }
-        Serial << '\n';
-      }
-    }
   }
 }
