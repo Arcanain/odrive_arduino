@@ -89,8 +89,9 @@ void loop() {
     // test position move
     if (c == 's') {
       Serial.println("Executing test position move");
-    　float pos_m0 = 1.0f;
-　　　float pos_m1 = 1.0f;
+      delay(2000);
+      float pos_m0 = 2.0f;
+      float pos_m1 = 2.0f;
       odrive.SetPosition(0, pos_m0);
       odrive.SetPosition(1, pos_m1);
     }
