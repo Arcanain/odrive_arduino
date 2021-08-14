@@ -86,35 +86,40 @@ void loop() {
       if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
     }
 
-    // test velocity move
-    if (c == 's') {
-        Serial.println("Executing test velocity move");
+    // test velocity moves
+    /*
+    Serial.println("Executing test velocity move");
+    Serial.println("Send the character 'u' velocity move");
+    Serial.println("Send the character 'd' velocity move");
+    Serial.println("Send the character 's' stop velocity move");
+    */
         
-        Serial.println("Send the character 'u' velocity move");
-        Serial.println("Send the character 'd' velocity move");
-        Serial.println("Send the character 's' stop velocity move");
+    if (c == 's') {
+        /*
+        delay(2000);
 
         char p = Serial.read();
-
+        
         float vel0 = 2.0f;
         float vel1 = 2.0f;
         
         if (p == 'u') {
-            odrive.SetVelocity(0, vel0, 20);
-            odrive.SetVelocity(1, vel0, 20);
+            odrive.SetVelocity(0, vel0);
+            odrive.SetVelocity(1, vel0);
 
-            odrive.SetVelocity(0, vel1, 20);
-            odrive.SetVelocity(1, vel1, 20);
+            //odrive.SetVelocity(0, vel1, 20);
+            //odrive.SetVelocity(1, vel1, 20);
         } else if (p == 'd') {
-            odrive.SetVelocity(0, -vel0, 20);
-            odrive.SetVelocity(1, -vel0, 20);
+            odrive.SetVelocity(0, -vel0);
+            odrive.SetVelocity(1, -vel0);
 
-            odrive.SetVelocity(0, -vel1, 20);
-            odrive.SetVelocity(1, -vel1, 20);
+            //odrive.SetVelocity(0, -vel1, 20);
+            //odrive.SetVelocity(1, -vel1, 20);
         } else if (p == 's') {
             odrive.SetVelocity(0, 0);
             odrive.SetVelocity(1, 0);
         }
+        */
         
         /*
         if (mydata_remote.down == 1 && endstop == 0) {
@@ -131,6 +136,11 @@ void loop() {
         }
         */
 
+        delay(2000);
+
+        float vel0 = 2.0f;
+        float vel1 = 2.0f;
+        
         odrive.SetVelocity(0, vel0);
         odrive.SetVelocity(1, vel1);
     }
