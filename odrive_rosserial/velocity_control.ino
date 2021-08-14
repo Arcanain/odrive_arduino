@@ -21,7 +21,11 @@
 // pin 19: RX - connect to ODrive TX
 // pin 18: TX - connect to ODrive RX
 // See https://www.arduino.cc/reference/en/language/functions/communication/serial/ for other options
-HardwareSerial& odrive_serial = Serial1;
+//HardwareSerial& odrive_serial = Serial1;
+
+// pin 17: RX - connect to ODrive TX
+// pin 16: TX - connect to ODrive RX
+HardwareSerial& odrive_serial = Serial2;
 
 // ODrive object
 //ODriveTool odrive(Serial1);
@@ -34,7 +38,7 @@ void messageCb(const geometry_msgs::Twist& msg);
 /* ROS */
 ros::NodeHandle  nh;
 
-ros::Subscriber<geometry_msgs::Twist> sub("cmd_vel", &messageCb);
+ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
 
 /*
 ros::Subscriber<std_msgs::Float32MultiArray> joy_sub("/joy_array", odrive_cb);
@@ -94,7 +98,7 @@ void ros_init()
     array_init(position_data,2);
     array_init(velocity_data,2);
     */
-    nh.getHardware()->setBaud(115200);
+    //nh.getHardware()->setBaud(115200);
     nh.initNode();
     nh.subscribe(sub);
 
@@ -106,6 +110,24 @@ void ros_init()
     */
 }
 
+void odrive_calibration()
+{
+  //int motornum = c-'0';
+  int requested_state;
+
+  requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
+  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //if(!odrive.run_state(motornum, requested_state, true)) return;
+
+  requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
+  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
+
+  requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
+  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
+}
+
 void setup() {
   /*
   odrive.odrive_reboot();
@@ -114,6 +136,21 @@ void setup() {
     delay(300);
   }
   */
+  // ODrive uses 115200 baud
+  Serial2.begin(115200);
+
+  // In this example we set the same parameters to both motors.
+  // You can of course set them different if you want.
+  // See the documentation or play around in odrivetool to see the available parameters
+  /*
+  for (int axis = 0; axis < 2; ++axis) {
+    Serial2 << "w axis" << axis << ".controller.config.vel_limit " << 5000.0f << '\n';
+    Serial2 << "w axis" << axis << ".motor.config.current_lim " << 20.0f << '\n';
+    // This ends up writing something like "w axis0.motor.config.current_lim 10.0\n"
+  }
+  */
+  
+  odrive_calibration();
   ros_init();
 }
 
@@ -131,7 +168,7 @@ void loop() {
   */
 
   nh.spinOnce();
-  //delay(500);
+  delay(500);
 }
 
 void messageCb(const geometry_msgs::Twist& msg){
@@ -140,8 +177,10 @@ void messageCb(const geometry_msgs::Twist& msg){
   w_r = (speed_lin/wheel_rad) + ((speed_ang*wheel_sep)/(2.0*wheel_rad));
   w_l = (speed_lin/wheel_rad) - ((speed_ang*wheel_sep)/(2.0*wheel_rad));
 
-  vel1 = w_r;
-  vel2 = w_l;
+  //vel1 = w_r;
+  //vel2 = w_l;
+  vel1 = 2.0f;
+  vel2 = 2.0f;
   odrive.SetVelocity(0, vel1);
   odrive.SetVelocity(1, vel2);
 }

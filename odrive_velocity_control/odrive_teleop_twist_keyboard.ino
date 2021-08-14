@@ -38,6 +38,12 @@ HardwareSerial& odrive_serial = Serial1;
 // ODrive object
 ODriveArduino odrive(odrive_serial);
 
+// golbal variable
+int cnt = 0;
+bool calb_flag = true;
+float vel0 = 2.0f;
+float vel1 = 2.0f;
+        
 void setup() {
   // ODrive uses 115200 baud
   odrive_serial.begin(115200);
@@ -59,18 +65,17 @@ void setup() {
   }
 
   Serial.println("Ready!");
-  Serial.println("Send the character '0' or '1' to calibrate respective motor (you must do this before you can command movement)");
-  Serial.println("Send the character 's' to test velocity move");
 }
 
 void loop() {
-
-  if (Serial.available()) {
-    char c = Serial.read();
-
-    // Run calibration sequence
-    if (c == '0' || c == '1') {
-      int motornum = c-'0';
+  
+  // loop初回時のみcalibrationを一回行う
+  if (calb_flag == true) {
+      calb_flag = false;
+      // axis0のみcalibration
+      char c = '0';
+      //int motornum = c-'0';
+      int motornum = 0;
       int requested_state;
 
       requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
@@ -84,17 +89,75 @@ void loop() {
       requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
       Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
       if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
-    }
-
-    if (c == 's') {
-        delay(2000);
-
-        float vel0 = 2.0f;
-        float vel1 = 2.0f;
-        
-        odrive.SetVelocity(0, vel0);
-        odrive.SetVelocity(1, vel1);
-    }
-
   }
+  
+  /*
+  --------------------------------------------------
+  Moving around:
+    q   w   e
+    a   s   d
+    z   x   c
+  T/B :   increase/decrease max speeds 10%
+  Y/N :   increase/decrease only linear speed 10%
+  U/M :   increase/decrease only angular speed 10%
+  anything else : stop
+  --------------------------------------------------
+  */
+  char cmd = Serial.read();
+  
+  switch (cmd) {
+    case 'w':
+      odrive.SetVelocity(0, vel0);
+      odrive.SetVelocity(1, vel1);
+      break;
+    case 'x':
+      odrive.SetVelocity(0, -vel0);
+      odrive.SetVelocity(1, -vel1);
+      break;
+    case 'd':
+      odrive.SetVelocity(0, vel0);
+      odrive.SetVelocity(1, 0);
+      break;
+    case 'a':
+      odrive.SetVelocity(0, 0);
+      odrive.SetVelocity(1, vel1);
+      break;
+    case 'e':
+      odrive.SetVelocity(0, 0.5 * vel0);
+      odrive.SetVelocity(1, vel1);
+      break;
+    case 'q':
+      odrive.SetVelocity(0, vel0);
+      odrive.SetVelocity(1, 0.5 * vel1);
+      break;
+    case 'c':
+      odrive.SetVelocity(0, -0.5 * vel0);
+      odrive.SetVelocity(1, -vel1);
+      break;
+    case 'z':
+      odrive.SetVelocity(0, -vel0);
+      odrive.SetVelocity(1, -0.5 * vel1);
+      break;
+    case 's':
+      odrive.SetVelocity(0, 0);
+      odrive.SetVelocity(1, 0);
+      break;
+    default:
+      printf("error");
+  }
+
+  /*
+  if (cmd == 'w') {
+      odrive.SetVelocity(0, vel0);
+      odrive.SetVelocity(1, vel1);
+  } else if (cmd == 'x') {
+      odrive.SetVelocity(0, -vel0);
+      odrive.SetVelocity(1, -vel1);
+  } else if (cmd == 's') {
+      odrive.SetVelocity(0, 0);
+      odrive.SetVelocity(1, 0);
+  }
+  */
+
+  cnt++;
 }
