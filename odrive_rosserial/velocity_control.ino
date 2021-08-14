@@ -54,6 +54,10 @@ ros::Publisher voltage_pub("/voltage", &voltage_data);
 /***********************************************************************
  * Global variables
  **********************************************************************/
+const int kv = 16;
+const int encoder_cpr = 90;
+const float pi = 3.14159262;
+
 float w_r = 0.0;
 float w_l = 0.0;
 
