@@ -23,6 +23,7 @@
 // See https://www.arduino.cc/reference/en/language/functions/communication/serial/ for other options
 //HardwareSerial& odrive_serial = Serial1;
 
+// Serial1はrosserialの方で使用されるため、ArduinoとOdriveはSerial2でUART通信を行う
 // pin 17: RX - connect to ODrive TX
 // pin 16: TX - connect to ODrive RX
 HardwareSerial& odrive_serial = Serial2;
