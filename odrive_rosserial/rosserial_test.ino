@@ -1,8 +1,5 @@
 /* Odrive */
-//#include <ODriveTool.h>
-#include <HardwareSerial.h>
-#include <SoftwareSerial.h>
-#include <ODriveArduino.h>
+#include <ODriveTool.h>
 
 /* ROS */
 #include <ros.h>
@@ -26,17 +23,17 @@
 // Serial1はrosserialの方で使用されるため、ArduinoとOdriveはSerial2でUART通信を行う
 // pin 17: RX - connect to ODrive TX
 // pin 16: TX - connect to ODrive RX
-HardwareSerial& odrive_serial = Serial2;
+//HardwareSerial& odrive_serial = Serial2;
 
 // ODrive object
 //ODriveTool odrive(Serial1);
-ODriveArduino odrive(odrive_serial);
+ODriveTool odrive(Serial2);
+//ODriveArduino odrive(odrive_serial);
 
 void messageCb(const geometry_msgs::Twist& msg);
 
 /* ROS */
 ros::NodeHandle  nh;
-
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
 
 /***********************************************************************
@@ -44,7 +41,7 @@ ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
  **********************************************************************/
 const int kv = 16;
 const int encoder_cpr = 90;
-const float pi = 3.14159262;
+//const float pi = 3.14159262;
 
 float w_r = 0.0;
 float w_l = 0.0;
@@ -58,49 +55,26 @@ float speed_lin = 0.0;
 
 float vel1,vel2;
 
-bool calb_flag = true;
-
 void ros_init()
 {
-    //nh.getHardware()->setBaud(115200);
+    nh.getHardware()->setBaud(115200);
     nh.initNode();
     nh.subscribe(sub);
 }
 
-void odrive_calibration()
-{
-  calb_flag = false;
-  // axis0のみcalibration
-  char c = '0';
-  int motornum = 0;
-  int requested_state;
-
-  requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
-  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  if(!odrive.run_state(motornum, requested_state, true)) return;
-
-  requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
-  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
-
-  requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
-  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
-}
-
 void setup() {
-  // ODrive uses 115200 baud
-  Serial2.begin(115200);
+  odrive.odrive_reboot();
+
+  for (int axis = 0; axis < 2 ; axis++) {
+    //odrive.odrive_init(axis);
+    odrive.odrive_init(axis, 5000.0f, 20.0f);
+    delay(300);
+  }
 
   ros_init();
 }
 
 void loop() {
- 
-  if (calb_flag == true) {
-    odrive_calibration();
-  }
-
   nh.spinOnce();
   delay(500);
 }
