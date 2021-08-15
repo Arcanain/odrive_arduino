@@ -116,15 +116,15 @@ void odrive_calibration()
   int requested_state;
 
   requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
-  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
   if(!odrive.run_state(motornum, requested_state, true)) return;
 
   requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
-  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
   if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
 
   requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
-  //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
+  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
   if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
 }
 
@@ -138,6 +138,7 @@ void setup() {
   */
   // ODrive uses 115200 baud
   Serial2.begin(115200);
+  delay(3000);
 
   // In this example we set the same parameters to both motors.
   // You can of course set them different if you want.
@@ -152,6 +153,7 @@ void setup() {
   
   odrive_calibration();
   delay(300);
+  
   ros_init();
 }
 
