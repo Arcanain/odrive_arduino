@@ -38,7 +38,6 @@ void messageCb(const geometry_msgs::Twist& msg);
 
 /* ROS */
 ros::NodeHandle  nh;
-
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
 
 /*
@@ -113,20 +112,20 @@ void ros_init()
 
 void odrive_calibration()
 {
-  //int motornum = c-'0';
+  int motornum = 0;
   int requested_state;
 
   requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
   //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  //if(!odrive.run_state(motornum, requested_state, true)) return;
+  if(!odrive.run_state(motornum, requested_state, true)) return;
 
   requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
   //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  //if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
+  if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
 
   requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
   //Serial << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  //if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
+  if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
 }
 
 void setup() {
@@ -152,6 +151,7 @@ void setup() {
   */
   
   odrive_calibration();
+  delay(300);
   ros_init();
 }
 
