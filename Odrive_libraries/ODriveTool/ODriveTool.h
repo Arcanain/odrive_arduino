@@ -2,9 +2,9 @@
 #define ODRIVE_TOOL_H
 
 #include <SoftwareSerial.h>
-#include <ODriveArduino.h>
+#include "OdriveArduino.h"
 
-class ODriveTool:public ODriveArduino{
+class ODriveTool:public OdriveArduino{
     public:
         ODriveTool(HardwareSerial& serial);
         void odrive_init(int axis, float vel_lim = 20000 , float current_lim = 50.0);
