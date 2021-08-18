@@ -4,10 +4,6 @@
  * ********************************************************************************
  * Topic
  * Publish  | cmd_vel
- * Publish  | position_pub
- * Publish  | velocity_pub
- * Publish  | voltage_pub
- * Sbscribe | cmd_vel
  * ********************************************************************************
  */
 #include "ODriveTool.h"
@@ -35,15 +31,6 @@ void messageCb(const geometry_msgs::Twist& msg);
 ros::NodeHandle  nh;
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
 
-std_msgs::Int32MultiArray position_data;
-ros::Publisher position_pub("/position", &position_data);
-
-std_msgs::Float32MultiArray velocity_data;
-ros::Publisher velocity_pub("/velocity", &velocity_data);
-
-std_msgs::Float32 voltage_data;
-ros::Publisher voltage_pub("/voltage", &voltage_data);
-
 /***********************************************************************
  * Global variables
  **********************************************************************/
@@ -64,54 +51,24 @@ float speed_lin = 0.0f;
 float vel1 = 0.0f;
 float vel2 = 0.0f;
 
-void array_init(std_msgs::Int32MultiArray& data, int array){
-    data.data_length = array;
-    data.data = (int32_t *)malloc(sizeof(int32_t)*array);
-    for(int i = 0; i < array ;i++){
-        data.data[i] = 0;
-    }
-}
-
-void array_init(std_msgs::Float32MultiArray& data, int array){
-    data.data_length = array;
-    data.data = (float *)malloc(sizeof(float)*array);
-    for(int i = 0; i < array ;i++){
-        data.data[i] = 0;
-    }
-}
-
 void ros_init()
 {
-    array_init(position_data,2);
-    array_init(velocity_data,2);
     nh.getHardware()->setBaud(115200);
     nh.initNode();
     nh.subscribe(sub);
-    nh.advertise(position_pub);
-    nh.advertise(velocity_pub);
-    nh.advertise(voltage_pub);
 }
 
 void setup() {
   odrive.odrive_reboot();
   for(int i = 0; i < 2 ; i++){
-    odrive.odrive_init(i);
+    //odrive.odrive_init(i);
+    odrive.odrive_init(i, 5000.0f, 20.0f);
     delay(300);
   }
   ros_init();
 }
 
 void loop() {
-  voltage_data.data = odrive.get_voltage();
-  voltage_pub.publish(&voltage_data);
-
-  for(int motor = 0; motor < 2 ;motor++){
-    position_data.data[motor] = odrive.get_position(motor);
-    velocity_data.data[motor] = odrive.get_velocity(motor);
-  }
-  position_pub.publish(&position_data);
-  velocity_pub.publish(&velocity_data);
-  
   nh.spinOnce();
   delay(500);
 }
