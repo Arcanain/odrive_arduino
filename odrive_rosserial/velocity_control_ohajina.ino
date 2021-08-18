@@ -95,7 +95,8 @@ void ros_init()
 void setup() {
   odrive.odrive_reboot();
   for(int i = 0; i < 2 ; i++){
-    odrive.odrive_init(i);
+    //odrive.odrive_init(i);
+    odrive.odrive_init(i, 5000.0f, 20.0f);
     delay(300);
   }
   ros_init();
