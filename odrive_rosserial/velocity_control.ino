@@ -46,6 +46,9 @@ void messageCb(const geometry_msgs::Twist& msg);
 ros::NodeHandle  nh;
 ros::Subscriber<geometry_msgs::Twist> sub("/cmd_vel", &messageCb);
 
+std_msgs::Float32MultiArray velocity_data;
+ros::Publisher velocity_pub("/velocity", &velocity_data);
+
 /***********************************************************************
  * Global variables
  **********************************************************************/
@@ -71,6 +74,7 @@ void ros_init()
   nh.getHardware()->setBaud(115200);
   nh.initNode();
   nh.subscribe(sub);
+  nh.advertise(velocity_pub);
 }
 
 void odrive_calibration()
@@ -116,6 +120,11 @@ void loop() {
   vel2 = 2.0f;
   odrive.SetVelocity(0, vel1);
   odrive.SetVelocity(1, vel2);
+  
+  // publish
+  velocity_data.data[0] = w_r;
+  velocity_data.data[1] = w_l;
+  velocity_pub.publish(&velocity_data);
 
   nh.spinOnce();
   delay(500);
