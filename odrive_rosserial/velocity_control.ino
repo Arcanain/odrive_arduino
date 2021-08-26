@@ -1,6 +1,6 @@
 /* Board  : Arduino Mega 2560
  * Author : Ramune6110
- * Data   : 2021 08/18(とりあえずキャリブレーションは成功)
+ * Data   : 2021 08/26(ROS通信成功！2輪とも回転した！)
  * ********************************************************************************
  * Topic
  * Publish  | cmd_vel
@@ -32,8 +32,8 @@
 //HardwareSerial& odrive_serial = Serial1;
 
 // Serial1はrosserialの方で使用されるため、ArduinoとOdriveはSerial2でUART通信を行う
-// pin 17: RX - connect to ODrive TX
-// pin 16: TX - connect to ODrive RX
+// pin 17: RX - connect to ODrive TX GPIO 1
+// pin 16: TX - connect to ODrive RX GPIO 2
 HardwareSerial& odrive_serial = Serial2;
 
 // ODrive object
@@ -80,25 +80,29 @@ void ros_init()
 void odrive_calibration()
 {
   int motornum = 0;
+  int motornum1 = 1;
   int requested_state;
+  int requested_state1;
   
   // In this example we set the same parameters to both motors.
   // You can of course set them different if you want.
   // See the documentation or play around in odrivetool to see the available parameters
   //odrive_serial << "w axis" << motornum << ".controller.config.vel_limit " << 5000.0f << '\n';
   //odrive_serial << "w axis" << motornum << ".motor.config.current_lim " << 20.0f << '\n';
-
-  requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
+  
+  //requested_state = ODriveArduino::AXIS_STATE_MOTOR_CALIBRATION;
   //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  if(!odrive.run_state(motornum, requested_state, true)) return;
+  //if(!odrive.run_state(motornum, requested_state, true)) return;
 
-  requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
+  //requested_state = ODriveArduino::AXIS_STATE_ENCODER_OFFSET_CALIBRATION;
   //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
-  if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
+  //if(!odrive.run_state(motornum, requested_state, true, 25.0f)) return;
 
   requested_state = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
-  //Serial2 << "Axis" << c << ": Requesting state " << requested_state << '\n';
   if(!odrive.run_state(motornum, requested_state, false /*don't wait*/)) return;
+  
+  requested_state1 = ODriveArduino::AXIS_STATE_CLOSED_LOOP_CONTROL;
+  if(!odrive.run_state(motornum1, requested_state1, false /*don't wait*/)) return;
 }
 
 void setup() {
@@ -116,18 +120,20 @@ void setup() {
 
 void loop() {
   // loop内でSetVelocityを指定して速度制御を行う
-  vel1 = 2.0f;
-  vel2 = 2.0f;
-  odrive.SetVelocity(0, vel1);
-  odrive.SetVelocity(1, vel2);
-  
+  //vel1 = 2.0f;
+  //vel2 = 2.0f;
+  //odrive.SetVelocity(0, vel1);
+  //odrive.SetVelocity(1, vel2);
+
+  /*
   // publish
   velocity_data.data[0] = w_r;
   velocity_data.data[1] = w_l;
   velocity_pub.publish(&velocity_data);
-
+  */
+  
   nh.spinOnce();
-  delay(500);
+  delay(100);
 }
 
 void messageCb(const geometry_msgs::Twist& msg){
@@ -136,10 +142,12 @@ void messageCb(const geometry_msgs::Twist& msg){
   w_r = (speed_lin/wheel_rad) + ((speed_ang*wheel_sep)/(2.0*wheel_rad));
   w_l = (speed_lin/wheel_rad) - ((speed_ang*wheel_sep)/(2.0*wheel_rad));
 
-  //vel1 = w_r;
-  //vel2 = w_l;
-  vel1 = 2.0f;
-  vel2 = 2.0f;
+  vel1 = w_r * 0.3;
+  vel2 = w_l * 0.3;
+  //vel1 = 2.0f;
+  //vel2 = 2.0f;
+
+  //velに送る値の単位はrpm(rad/s → rpmに変換する必要あり)
   odrive.SetVelocity(0, vel1);
   odrive.SetVelocity(1, vel2);
 }
