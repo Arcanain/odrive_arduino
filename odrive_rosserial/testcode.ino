@@ -104,7 +104,7 @@ void setup()
 {
   // ODrive uses 115200 baud(Odriveは115200でないと動かない様子)
   odrive_serial.begin(115200);
-  delay(100);
+  delay(1000);
 
   odrive_calibration();
   delay(1000);
