@@ -2,6 +2,7 @@
  * Author : Ramune6110
  * Data   : 2021 08/26(ROS通信成功！2輪とも回転した！)
  * 各種daley()を無くす事で初期通信時の赤いエラーが消え、通信がより滑らかになった！
+ * ros_odrive内に生成したkey_teleop.pyを使用して八方向モーター制御が出来た！(rosrun ros_odrive key_teleop.py)
  * ********************************************************************************
  * Topic
  * Publish  | cmd_vel
@@ -52,22 +53,21 @@ ros::Publisher velocity_pub("/velocity", &velocity_data);
 /***********************************************************************
  * Global variables
  **********************************************************************/
-const int kv = 16;
-const int encoder_cpr = 90;
-const float PI = 3.14159262f;
+const int kv = 16;          // moter constant
+const int encoder_cpr = 90; // encoder cpr
+const float pi = 3.14159262f;
 
-float w_r = 0.0f;
-float w_l = 0.0f;
+float w_r = 0.0f;           // right angle accl
+float w_l = 0.0f;           // left angle accl
 
-//wheel_rad is the wheel radius ,wheel_sep is
-float wheel_rad = 0.085f;
-float wheel_sep = 0.32f;
+float wheel_rad = 0.085f;   // wheel radius
+float wheel_sep = 0.32f;    // wheel separation
 
-float speed_ang = 0.0f;
-float speed_lin = 0.0f;
+float speed_ang = 0.0f;     // angle velocity
+float speed_lin = 0.0f;     // linear velocity
 
-float vel1 = 0.0f;
-float vel2 = 0.0f;
+float vel1 = 0.0f;          // axis0 velocity
+float vel2 = 0.0f;          // axis1 velocity
 
 void ros_init()
 {
@@ -94,23 +94,19 @@ void odrive_calibration()
 void setup() {
   // ODrive uses 115200 baud(Odriveは115200でないと動かない様子)
   odrive_serial.begin(115200);
- //delay(3000);
-  
-  // moterキャリブレーション
+ 
   odrive_calibration();
- //delay(300);
 
   ros_init();
 }
 
 void loop() {
   nh.spinOnce();
- //delay(10);
 }
 
 void messageCb(const geometry_msgs::Twist& msg){
-  speed_ang = msg.angular.z;
   speed_lin = msg.linear.x;
+  speed_ang = msg.angular.z;
   w_r = (speed_lin/wheel_rad) + ((speed_ang*wheel_sep)/(2.0*wheel_rad));
   w_l = (speed_lin/wheel_rad) - ((speed_ang*wheel_sep)/(2.0*wheel_rad));
 
@@ -120,20 +116,4 @@ void messageCb(const geometry_msgs::Twist& msg){
   //velに送る値の単位はrpm(rad/s → rpmに変換する必要あり)
   odrive.SetVelocity(0, vel1);
   odrive.SetVelocity(1, vel2);
-}
-
-float get_velocity(int axis, float reduction_ratio, int encoder_cpr){
-    float encoder_vel=0, velocity=0;
-    odrive_serial.write(“r axis0.encoder.pos_estimate\n”);
-    //odrive_ << "r axis" << axis << ".encoder.vel_estimate\n";
-    encoder_vel = odrive.readFloat();
-    //return velocity=(encoder_vel*(PI/encoder_cpr))/reduction_ratio ;
-    return encoder_vel;
-}
-
-float get_position(int axis, float reduction_ratio, int encoder_cpr){
-    float encoder_pos=0, position=0;
-    odrive_ << "r axis" << axis << ".encoder.pos_estimate\n";
-    encoder_pos=ODriveArduino::readFloat();
-    return position=((360*(fmod(encoder_pos,360)))/encoder_cpr)/reduction_ratio ;
 }
