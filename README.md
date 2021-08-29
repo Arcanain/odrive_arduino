@@ -4,6 +4,7 @@
 
 - Terminal 1
 ```bash
+sudo chmod 666 /dev/ttyACM0
 rosrun rosserial_python serial_node.py /dev/ttyACM0 _baud:=115200
 ```
 - Terminal 2
@@ -15,6 +16,7 @@ rosrun odrive_odometry key_teleop.py
 
 - Terminal 1
 ```bash
+sudo chmod 666 /dev/ttyACM0
 rosrun rosserial_python serial_node.py /dev/ttyACM0 _baud:=115200
 ```
 - Terminal 2
