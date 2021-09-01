@@ -42,7 +42,7 @@ void setup() {
 }
 
 void loop() {
-    Serial.println("Executing test position move");
+    Serial.println("Executing test position control");
     delay(2000);
     float pos_m0 = 2.0f;
     float pos_m1 = 2.0f;
